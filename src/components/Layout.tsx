@@ -9,12 +9,12 @@ function Layout() {
   );
   const [serverErr, setServerErr] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
-  const lastFive = [100, 93, 84, 80, fillAmount];
+  const [lastFive, setLastFive] = React.useState([100, 93, 84, 80, fillAmount]);
 
   function refresh() {
     try {
       setLoading(true);
-      fetch("http://water-meter.ddns.net/analyze_image/api/")
+      fetch("https://water-meter.ddns.net/analyze_image/api/")
         .then((response) => {
           if (!response.ok) {
             throw new Error(
@@ -25,6 +25,9 @@ function Layout() {
         })
         .then((json) => {
           setFillAmount(json.response);
+          if (json.lastFive) {
+            setLastFive(json.lastFive);
+          }
           setLoading(false);
           let date = new Date().toLocaleString("en-US");
           setServerErr(0);
@@ -50,7 +53,13 @@ function Layout() {
     <div className="layout-container">
       <div className="fill-container">
         <h1>Water Level:</h1>
-        <div className="big-number">{fillAmount}%</div>
+        {loading ? (
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        ) : (
+          <div className="big-number">{fillAmount}%</div>
+        )}
 
         <div
           className="progress"

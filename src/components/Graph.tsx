@@ -1,7 +1,6 @@
 import React from "react";
 import { Line } from "react-chartjs-2";
 import "chart.js/auto";
-import { plugins } from "chart.js/auto";
 
 type Props = {
   data: number[];
@@ -27,6 +26,7 @@ const Graph: React.FC<Props> = ({ data }) => {
         pointBorderColor: "#fff",
         pointHoverBackgroundColor: "#fff",
         pointHoverBorderColor: "rgba(13, 110, 253, 1)",
+        tension: 0.25,
       },
     ],
   };
@@ -36,15 +36,6 @@ const Graph: React.FC<Props> = ({ data }) => {
     plugins: {
       legend: {
         display: false,
-      },
-    },
-    animations: {
-      tension: {
-        duration: 3000,
-        easing: "easeInQuad",
-        from: 0.5,
-        to: 0,
-        loop: true,
       },
     },
     scales: {

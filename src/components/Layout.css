@@ -19,6 +19,12 @@
   width: 50%; /* Adjust width as needed */
 }
 
+.spinner-border {
+  scale: 3;
+  margin-top: 75px;
+  margin-bottom: 75px;
+}
+
 /* Style for the big number */
 .big-number {
   font-size: 10rem; /* Adjust the size as needed */
