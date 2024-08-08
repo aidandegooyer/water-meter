@@ -1,0 +1,59 @@
+/* Layout.css */
+
+/* Container to arrange elements horizontally */
+.layout-container {
+  display: flex;
+  justify-content: space-between; /* Adjust to 'space-between' to spread out items */
+  align-items: center;
+  height: 100vh; /* Full viewport height */
+  padding: 20px; /* Add padding if needed */
+  box-sizing: border-box;
+}
+
+/* Container for the big number and progress bar */
+.fill-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 50%; /* Adjust width as needed */
+}
+
+/* Style for the big number */
+.big-number {
+  font-size: 10rem; /* Adjust the size as needed */
+  margin-bottom: 20px; /* Space between the number and the progress bar */
+}
+
+/* Style for the progress bar container */
+.progress {
+  width: 100%; /* Full width of its container */
+  max-width: 400px; /* Limit the width */
+  height: 0px; /* Adjust the height as needed */
+  background-color: #e9ecef; /* Light gray background */
+  border-radius: 0.25rem; /* Rounded corners */
+  overflow: hidden; /* Prevent overflow */
+  margin-bottom: 20px; /* Space between the number and the progress bar */
+
+}
+
+/* Style for the animated progress bar */
+.progress-bar {
+  height: 100%; /* Full height of the container */
+  transition: width 0.6s ease; /* Smooth transition */
+}
+
+.last-refresh {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.alert {
+  margin-top: 10px;
+}
+
+/* Style for the graph element */
+.graph-element {
+  width: 50%; /* Adjust width as needed */
+  height: 75%; /* Full height */
+}

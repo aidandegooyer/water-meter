@@ -1,0 +1,61 @@
+import React from "react";
+import { Line } from "react-chartjs-2";
+import "chart.js/auto";
+import { plugins } from "chart.js/auto";
+
+type Props = {
+  data: number[];
+};
+
+const Graph: React.FC<Props> = ({ data }) => {
+  const labels = Array.from({ length: 5 }, (_, i) => {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    return date.toLocaleDateString();
+  }).reverse();
+
+  const chartData = {
+    labels,
+    datasets: [
+      {
+        data,
+        fill: true,
+        backgroundColor: "rgba(13, 110, 253, 0.4)", // Bootstrap primary color
+        borderColor: "rgba(13, 110, 253, 1)", // Bootstrap primary color
+        borderWidth: 2,
+        pointBackgroundColor: "rgba(13, 110, 253, 1)",
+        pointBorderColor: "#fff",
+        pointHoverBackgroundColor: "#fff",
+        pointHoverBorderColor: "rgba(13, 110, 253, 1)",
+      },
+    ],
+  };
+
+  const options = {
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+    },
+    animations: {
+      tension: {
+        duration: 3000,
+        easing: "easeInQuad",
+        from: 0.5,
+        to: 0,
+        loop: true,
+      },
+    },
+    scales: {
+      y: {
+        min: 0,
+        max: 100,
+      },
+    },
+  };
+
+  return <Line data={chartData} options={options} />;
+};
+
+export default Graph;
