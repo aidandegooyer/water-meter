@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Animated Water Fill</title>
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* 1) Horizontal slide via transform (GPU) */
+    @keyframes slide-front { 
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    @keyframes slide-back {
+      0%   { transform: translateX(-50%); }
+      100% { transform: translateX(0); }
+    }
+
+    /* 2) Wave styles */
+    .wave {
+      position: absolute;
+      left: 0;
+      width: 200%;
+      height: 100px;
+      /* background-image removed */
+      will-change: transform;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .wave.front {
+      animation: slide-front 7s ease-in-out infinite alternate;
+    }
+    .wave.back {
+      animation: slide-back 11s ease-in-out infinite alternate;
+    }
+
+    .rain__drop {
+  animation-delay: calc(var(--d) * 1s);
+  animation-duration: calc(var(--a) * 1s);
+  animation-iteration-count: infinite;
+  animation-name: drop;
+  animation-timing-function: linear;
+  height: 30px;
+  left: calc(var(--x) * 1%);
+  position: absolute;
+  top: calc((var(--y) + 50) * -1px);
+
+  path
+    {fill: #a1c6cc;
+    opacity: var(--o);
+    transform: scaleY(calc(var(--s) * 1.5));}
+
+    }
+
+@keyframes drop {
+  90% 
+    {opacity: 1;}
+  100%
+    {opacity: 0;
+    transform: translateY(100vh);}
+}
+    
+    html, body {
+      overflow: hidden !important;
+      cursor: none;
+      
+    }
+
+    ::selection {
+        color: #0c0043;
+        background: #bedaff;
+    }
+
+  </style>
+</head>
+<body class="relative h-screen overflow-hidden bg-blue-950 select-none">
+
+
+
+
+ <!--  <div class="rain absolute inset-0 z-0 opacity-0"></div> -->
+
+          <!-- 1) Blue “tank” fill -->
+  <div id="water" 
+       class="absolute top-0 left-0 w-full h-screen bg-blue-400 overflow-hidden z-1 transition-all duration-[2s] ease-in-out ">
+  </div>
+
+    <!-- 2) Waves container (full-height, so we can position them absolutely) -->
+  <div id="waves" class="absolute inset-0 pointer-events-none transition-all duration-[2s] ease-in-out">
+    <div id="waveFront" class="wave front text-blue-400 z-20 ">
+      <svg viewBox="0 0 1200 100" class="w-full h-full" preserveAspectRatio="none">
+        <path class="fill-current"  d="M0,50 C150,150 350,0 600,50 C850,100 1050,0 1200,50 L1200,100 L0,100 Z"/>
+
+      </svg>
+    </div>
+    <div id="waveBack" class="wave back text-blue-300 z-10 " style="top: -5px;">
+      <svg viewBox="0 0 1200 100" class="w-full h-full  " preserveAspectRatio="none">
+        <path class="fill-current"  d="M0,50 C150,150 350,0 600,50 C850,100 1050,0 1200,50 L1200,100 L0,100 Z"/>
+
+      </svg>
+    </div>
+  </div>
+
+
+
+
+
+
+  <!-- 3) Centered text -->
+<div class="absolute inset-0 flex flex-col items-center justify-center z-50">
+    <h1 id="levelLabel" class="text-6xl font-bold text-blue-200 drop-shadow-lg">Water Level</h1>
+    <h1 id="levelText" class="text-9xl font-bold text-blue-100 drop-shadow-lg">--%</h1>
+    <button id="refreshButton" class="cursor-none bg-blue-100 p-3 mt-4 text-3xl rounded-xl hover:bg-blue-200 hover:scale-105 transition-all outline-none focus:bg-blue-200 focus:outline-2 focus:outline-blue-100 focus:outline-offset-4 ">
+
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+  <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/>
+  <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/>
+</svg>
+
+    </button>
+
+    <div id="spinner" class="mt-4 hidden">
+  <svg class="animate-spin h-[72px] w-[72px] text-blue-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+  </svg>
+</div>
+    <h3 id="refreshedTime" class="text-blue-200 mt-4 drop-shadow-lg">⠀</h3>
+</div>
+
+
+
+  <script>
+    async function updateLevel() {
+      const refreshButton = document.getElementById('refreshButton');
+  const spinner = document.getElementById('spinner');
+  const refreshedTime = document.getElementById('refreshedTime');
+  refreshButton.classList.add('hidden');
+  spinner.classList.remove('hidden');
+      try {
+        res = await fetch('http://water-sensor.local:5000/api/level');
+        const { percent } = await res.json();
+        //percent = Math.random() * 100; // Simulate API response for demo
+        const pct = Math.round(percent);
+
+        // 1) Move the blue fill and waves up/down with translateY
+        const translate = 107 - pct;
+        document.getElementById('water').style.transform = `translateY(${translate}%)`;
+
+        // 2) Move both waves to sit at the new water surface
+        document.getElementById('waves').style.transform = `translateY(calc(${translate}% - 90px))`;
+
+        // 3) Update the big text
+        document.getElementById('levelText').textContent = pct + '%';
+        if (pct < 20) {
+          document.getElementById('levelText').classList.add('text-red-400');
+                    document.getElementById('levelLabel').classList.add('text-red-400');
+
+        } else {
+          document.getElementById('levelText').classList.remove('text-red-400');
+                    document.getElementById('levelLabel').classList.remove('text-red-400');
+
+
+        }
+      } catch (e) {
+                document.getElementById('waves').style.transform = `translateY(-90px)`;
+                document.getElementById('levelText').textContent =  '--%';
+
+        console.error('Failed to fetch level', e);
+      }
+      finally {
+        refreshedTime.textContent = `Last refreshed: ${new Date().toLocaleTimeString()} ${new Date().toLocaleDateString()}`;
+    refreshButton.classList.remove('hidden');
+    spinner.classList.add('hidden');
+
+  }
+    }
+
+    updateLevel();
+
+    document.getElementById('refreshButton').onclick = updateLevel;
+    document.getElementById('refreshedTime').onclick = () => {
+      window.location.reload();
+    };
+  </script>
+
+
+<script>
+  (function() {
+    const droplets = 250;
+    const rainContainer = document.querySelector('.rain');
+    
+    for (let r = 0; r < droplets; r++) {
+      // create the SVG element
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.classList.add('rain__drop');
+      svg.setAttribute('preserveAspectRatio', 'xMinYMin');
+      svg.setAttribute('viewBox', '0 0 5 50');
+      
+      // randomly generate your CSS vars
+      const x = Math.floor(Math.random() * 100);
+      const y = Math.floor(Math.random() * 100);
+      const o = Math.random();
+      const a = Math.random() + 0.5;
+      const d = (Math.random() * 2) - 1;
+      const s = Math.random();
+      svg.style.cssText = `--x: ${x}; --y: ${y}; --o: ${o}; --a: ${a}; --d: ${d}; --s: ${s};`;
+      
+      // create the path inside it
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('stroke', 'none');
+      path.setAttribute(
+        'd',
+        'M 2.5,0 C 2.6949458,3.5392017 3.344765,20.524571 4.4494577,30.9559 ' +
+        '5.7551357,42.666753 4.5915685,50 2.5,50 0.40843152,50 -0.75513565,42.666753 ' +
+        '0.55054234,30.9559 1.655235,20.524571 2.3050542,3.5392017 2.5,0 Z'
+      );
+      
+      svg.appendChild(path);
+      rainContainer.appendChild(svg);
+    }
+  })();
+</script>
+</body>
+</html>
